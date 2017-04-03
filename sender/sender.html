@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <h1>Hello World</h1>
+    <button is="google-cast-button"></button>
+
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+    <button id="prev">Prev</button>
+    <button id="next">Next</button>
+
+    <script>
+        initializeCastApi = function() {
+            cast.framework.CastContext.getInstance().setOptions({
+                receiverApplicationId: '11F6C4AB',
+                autoJoinPolicy: chrome.cast.AutoJoinPolicy.ORIGIN_SCOPED
+            });
+
+            console.log('test');
+
+            document.querySelector('#start').addEventListener('click', function() {
+                console.log('clicked start');
+                castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+                castSession.sendMessage('urn:x-cast:de.kolping-dietfurt.event', JSON.stringify({
+                   action: 'start',
+                   id: 304
+               }));
+            });
+
+            document.querySelector('#stop').addEventListener('click', function() {
+                console.log('clicked stop');
+                castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+                castSession.sendMessage('urn:x-cast:de.kolping-dietfurt.event', JSON.stringify({
+                    action: 'stop'
+                }));
+            });
+
+            document.querySelector('#next').addEventListener('click', function() {
+                console.log('clicked next');
+                castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+                castSession.sendMessage('urn:x-cast:de.kolping-dietfurt.event', JSON.stringify({
+                    action: 'next'
+                }));
+            });
+
+            document.querySelector('#prev').addEventListener('click', function() {
+                console.log('clicked prev');
+                castSession = cast.framework.CastContext.getInstance().getCurrentSession();
+                castSession.sendMessage('urn:x-cast:de.kolping-dietfurt.event', JSON.stringify({
+                    action: 'prev'
+                }));
+            });
+
+        };
+
+        window['__onGCastApiAvailable'] = function(isAvailable) {
+            if (isAvailable) {
+                initializeCastApi();
+            }
+        };
+    </script>
+    <script src="https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1"></script>
+</body>
+</html>

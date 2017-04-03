@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="//www.gstatic.com/cast/sdk/libs/receiver/2.0.0/cast_receiver.js"></script>
+    <style>
+        html, body {
+            background: #ee7f01;
+            color: #FFF;
+            font-family: sans-serif;
+            padding: 0;
+            margin: 0;
+        }
+
+        #placeholder {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 5vh;
+            width:80%;
+            text-align: center;
+            transition: opacity .5s;
+        }
+
+        #placeholder.hidden {
+            opacity: 0;
+        }
+
+        #mount {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            text-align: center;
+            transition: opacity .5s;
+        }
+
+        #mount.hidden {
+            opacity: 0;
+        }
+
+        #mount img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 100%;
+            height: auto;
+            max-height: 100%;
+            vertical-align: top;
+            opacity: 0;
+            transition: opacity .5s;
+        }
+
+        #mount img.active {
+            opacity: 1;
+        }
+
+        #mount .loader {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%,-50%);
+            animation: pulse 2s infinite;
+            font-size: 3vh;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+
+            50% {
+                transform: scale(1.5);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="mount" class="hidden"></div>
+    <div id="placeholder">
+        Starten sie die Slideshow eines Newsbeitrags.
+    </div>
+
+    <script src="slideshow.js"></script>
+    <script src="app.js"></script>
+    <script>
+        var app = new App();
+
+
+        cast.receiver.logger.setLevelValue(cast.receiver.LoggerLevel.DEBUG);
+
+       let receiverManager = cast.receiver.CastReceiverManager.getInstance();
+        receiverManager.onReady = function(event) {
+            console.log('ready', event);
+
+        };
+
+        receiverManager.onSenderConnected = function(event) {
+            console.log("### Cast Receiver Manager - Sender Connected : " + JSON.stringify(event));
+//            var senders = receiverManager.getSenders();
+        };
+
+        receiverManager.onSenderDisconnected = function(event) {
+            console.log("### Cast Receiver Manager - Sender Disconnected : " + JSON.stringify(event));
+//            var senders = receiverManager.getSenders();
+        };
+
+        let messageBus = receiverManager.getCastMessageBus('urn:x-cast:de.kolping-dietfurt.event');
+
+        messageBus.onMessage = function(event) {
+            console.log("### Message Bus - Media Message: " + JSON.stringify(event));
+            console.log("### CUSTOM MESSAGE: " + JSON.stringify(event));
+            // show/hide messages
+            let data = JSON.parse(event['data']);
+
+            switch (data.action) {
+                case 'start':
+                    app.show(data.id);
+                    break;
+
+                case 'stop':
+                    app.clear();
+                    break;
+
+                case 'next':
+                    app.slideshow.next();
+                    break;
+
+                case 'prev':
+                    app.slideshow.prev();
+                    break;
+            }
+        };
+
+        let appConfig = new cast.receiver.CastReceiverManager.Config();
+
+        appConfig.statusText = 'Ready to play';
+
+        appConfig.maxInactivity = 6000; // 10 minutes for testing, use default 10sec in prod by not setting this value
+
+        receiverManager.start(appConfig);
+
+    </script>
+</body>
+</html>
